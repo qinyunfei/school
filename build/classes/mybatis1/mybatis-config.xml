@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD SQL Map Config 3.0//EN"  
+	"http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	
+	<!--settings设置 -->
+	<settings> 
+        <setting name="cacheEnabled" value="true" /><!-- 全局映射器缓存 -->   
+        <setting name="useGeneratedKeys" value="true" /> <!--允许JDBC 生成主键 -->
+        <setting name="defaultExecutorType" value="REUSE" /> 
+    </settings>
+ 	
+ 	<!-- typeAliases类型别名 
+	<typeAliases>
+		<typeAlias type="sgg.qin.util.PageData" alias="pageData"/> 
+		<package name="sgg.qin.domain.sys"/> 
+		<package name="sgg.qin.domain"/> 
+	</typeAliases>
+	SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(Resources.getResourceAsStream("mybatis-config.xml"));
+	
+	-->
+	<!-- plugins插件 拦截器 -->
+	<plugins>
+		<plugin interceptor="sgg.qin.framework.mybatis.PagePlugin">
+			<property name="dialect" value="mysql"/>
+		</plugin>
+	</plugins>
+	
+</configuration>

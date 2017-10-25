@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sgg.qin.dao.sys.RoleDao">
+
+	<!--表名 -->
+	<sql id="tableName">
+		sys_roles
+	</sql>
+	
+	<sql id="Field">
+		role,
+		description,
+		available
+	</sql>
+	
+	<sql id="FieldValue">
+		#{role},
+		#{description},
+		#{available}
+	</sql>
+	<!-- 分页查询数据 -->
+	<select id="queryRolelistPage" parameterType="page" resultType="pageData">
+		select * from <include refid="tableName"></include>
+	</select>
+	
+	<!-- 添加角色 -->
+	<insert id="insertRole" parameterType="role">
+		insert into
+		<include refid="tableName"></include>
+		(
+		<include refid="Field"></include>
+		) values (
+		<include refid="FieldValue"></include>
+		)
+	</insert>
+	
+	<!-- 添加用户角色关联关系 -->
+	<insert id="insertUserRole">
+		insert into  sys_users_roles values(#{userId},#{roleId})
+	</insert>
+	
+	<!-- 修改角色 -->
+	<update id="updateRole" parameterType="role">
+		update
+		<include refid="tableName"></include>
+		set
+		role =#{role},
+		description =#{description},
+		available=#{available}
+		where
+		id=#{id}
+	</update>
+	
+	<update id="updateUserRoleByUserId">
+		update sys_users_roles set role_id=#{roleId} where user_id=#{userId}
+	
+	</update>
+	
+	<!-- 删除角色 -->
+	<delete id="deleteRoleById" parameterType="int">
+		delete from
+		<include refid="tableName"></include>
+		where id=#{id}
+	</delete>
+	
+	<!-- 根据用户id删除用户角色关联关系 -->
+	<delete id="deleteUserRoleByUserId">
+		delete from sys_users_roles where user_id=#{userId}
+	</delete>
+</mapper>

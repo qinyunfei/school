@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sgg.qin.dao.sys.ResourceDao">
+	<!-- 结果集映射 -->
+	<resultMap type="sgg.qin.domain.sys.Resource" id="resourceResultMap">
+		<id column="id" property="id"/>
+		<result column="name" property="name"/>
+		<result column="type" property="type"/>
+		<result column="url" property="url"/>
+		<result column="parent_id" property="parentId"/>
+		<result column="permission" property="permission"/>
+		<result column="icon" property="icon"/>
+		<result column="available" property="available"/>
+	</resultMap>
+	
+	
+	<!-- 带子资源的结果集映射 -->
+	<resultMap type="sgg.qin.domain.sys.Resource" id="resource_sublist_ResultMap">
+		<id column="id" property="id"/>
+		<result column="name" property="name"/>
+		<result column="type" property="type"/>
+		<result column="url" property="url"/>
+		<result column="parent_id" property="parentId"/>
+		<result column="permission" property="permission"/>
+		<result column="icon" property="icon"/>
+		<result column="available" property="available"/>
+		<!-- fetchType懒加载策略  ofType：集合里的类型-->
+		<collection property="children"  column="id" fetchType="eager" ofType="Resource" select="listSubResourceById"/>
+	</resultMap>
+
+	<!--表名 -->
+	<sql id="tableName">
+		sys_resource
+	</sql>
+	<!-- 字段 -->
+	<sql id="Field">
+		name,
+		type,
+		url,
+		parent_id,
+		permission,
+		icon
+	</sql>
+
+	<!-- 字段值 -->
+	<sql id="FieldValue">
+		#{name},
+		#{type},
+		#{url},
+		#{parentId},
+		#{permission},
+		#{icon}
+	</sql>
+
+	<!-- 根据角色名获取权限集合 -->
+	<select id="findPermissions" parameterType="pageData"
+		resultType="String">
+		SELECT
+			c.permission
+		FROM
+			sys_resource c
+		WHERE
+			c.id IN(
+				SELECT
+					b.resource_id
+				FROM
+					sys_roles_resource b
+				WHERE
+					b.role_id =(
+						SELECT
+							a.id
+						FROM
+							sys_roles a
+						WHERE
+							a.role = #{role}
+						)
+					)
+	</select>
+		
+	<!-- 根据用户名获取权限集合 -->
+	<select id="findPermissionsByUserName" parameterType="String"
+		resultType="String">
+		SELECT
+			d.permission
+		FROM
+			sys_resource d
+		WHERE
+			d.id IN(
+				SELECT
+					c.resource_id
+				FROM
+					sys_roles_resource c
+				WHERE
+					c.role_id IN(
+						SELECT
+							b.role_id	
+						FROM
+							sys_users_roles b
+						WHERE
+							b.user_id =(
+								SELECT
+									a.id
+								FROM
+									sys_user a
+								WHERE
+									a.username = #{username}
+										)
+								)
+						)
+	</select>
+
+   <!-- 通过ID获取其子一级资源 -->
+	<select id="listSubResourceById" parameterType="int"
+		resultMap="resource_sublist_ResultMap">
+		select  
+			*
+		from 
+			<include refid="tableName"></include>
+		where parent_id = #{id} 
+	</select>
+	
+	<!-- 添加资源 -->
+	<insert id="insertResource" parameterType="resource">
+		insert into
+		<include refid="tableName"></include>
+		(
+		<include refid="Field"></include>
+		) values (
+		<include refid="FieldValue"></include>
+		)
+	</insert>
+	
+	<!-- 根据id修改资源 -->
+	<update id="updateResource" parameterType="resource">
+		update 
+		<include refid="tableName"></include> 
+		set	
+				name=#{name},
+				type=#{type},
+				url=#{url},
+				permission=#{permission}
+		where 
+			id=#{id}
+	</update>
+	
+	<!-- 根据id删除资源 -->
+	<delete id="deleteResourceById" parameterType="int">
+	    delete from
+		<include refid="tableName"></include>
+		where id=#{id}
+	</delete>
+	
+	<!-- 添加角色权限关联关系 -->
+	<insert id="insertRoleResourceAndRole" parameterType="list">
+		insert into sys_roles_resource values
+		<foreach collection="list" item="item"  separator="," >
+			(#{item.roleId},#{item.resourceId} )
+		</foreach>
+	</insert>
+	
+	<!-- 更具角色ID删除角色权限关联关系 -->
+	<delete id="deleteRoleResourceByRoleId" parameterType="int" >
+		delete from sys_roles_resource where role_id=#{roleId}
+	</delete>
+	
+	<!-- 根据权限id删除权限关联关系 -->
+	<delete id="deleteRoleResourceByResourceId" parameterType="int">
+		delete from sys_roles_resource where resource_id=#{resourceId}
+	</delete>
+
+</mapper>
